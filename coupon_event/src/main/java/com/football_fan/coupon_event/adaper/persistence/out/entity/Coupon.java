@@ -1,34 +1,37 @@
-package com.football_fan.coupon_event.application.adaper.out.persistence.entity;
+package com.football_fan.coupon_event.adaper.persistence.out.entity;
 
 import com.football_fan.coupon_event.application.domain.policy.CouponEventTypeStrategy;
 import com.football_fan.coupon_event.application.domain.DiscountType;
 import jakarta.persistence.*;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
 
 @Entity
+@Getter
 @Table(name = "coupons")
 public class Coupon {
     @Id
     Long id;
 
     @Embedded
-    DiscountType discountType;
+    private DiscountType discountType;
 
-    Float discountValue;
+    private Float discountValue;
 
-    LocalDateTime expirationDate;
+    private LocalDateTime expirationDate;
+
     private Boolean isUsed;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "event_coupon_id")
-    EventCouponEntity eventCoupon;
+    private EventCoupon eventCoupon;
 
     @Column(nullable = false, updatable = false)
-    String userId;
+    private String userId;
 
-    LocalDateTime createdAt = LocalDateTime.now();
-    LocalDateTime updatedAt = LocalDateTime.now();
+    private final LocalDateTime createdAt = LocalDateTime.now();
+    private final LocalDateTime updatedAt = LocalDateTime.now();
 
     public Coupon() {
     }
@@ -41,6 +44,10 @@ public class Coupon {
         return couponEventTypeStrategy.apply();
     }
 
+    public void assignEventCoupon(EventCoupon eventCoupon) {
+        this.eventCoupon = eventCoupon;
+    }
+
     public boolean useCoupon() {
         return isUsed = true;
     }
@@ -48,6 +55,14 @@ public class Coupon {
     public Coupon yearlyExpirationDate() {
         expirationDate = LocalDateTime.now().plusYears(1);
         return this;
+    }
+
+    public Long getEventCouponId() {
+        return eventCoupon.getId();
+    }
+
+    public void assignExpirationDate(LocalDateTime expirationDate) {
+        this.expirationDate = expirationDate;
     }
 
     public void noExpirationDate() {

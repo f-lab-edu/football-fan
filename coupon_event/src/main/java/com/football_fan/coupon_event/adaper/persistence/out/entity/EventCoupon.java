@@ -1,15 +1,17 @@
-package com.football_fan.coupon_event.application.adaper.out.persistence.entity;
+package com.football_fan.coupon_event.adaper.persistence.out.entity;
 
 import com.football_fan.coupon_event.application.domain.CouponEventType;
 import com.football_fan.coupon_event.application.domain.EventStatus;
 import jakarta.persistence.*;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Getter
 @Table(name = "event_coupons")
-public class EventCouponEntity {
+public class EventCoupon {
     @Id
     private Long id;
 
@@ -23,6 +25,14 @@ public class EventCouponEntity {
 
     @OneToMany(fetch = FetchType.LAZY)
     private List<Coupon> coupons = new ArrayList<>();
+
+    public static EventCoupon createEventCoupon(String name, CouponEventType couponEventType) {
+        EventCoupon eventCoupon = new EventCoupon();
+        eventCoupon.name = name;
+        eventCoupon.couponEventType = couponEventType;
+        eventCoupon.status = EventStatus.OPENED;
+        return eventCoupon;
+    }
 
     public void endEvent() {
         status = EventStatus.CLOSED;
