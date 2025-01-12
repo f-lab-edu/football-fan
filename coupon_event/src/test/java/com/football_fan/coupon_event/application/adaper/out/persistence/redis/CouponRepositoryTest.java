@@ -38,9 +38,9 @@ class CouponRepositoryTest {
     @DisplayName("동시에 여러 스레드가 쿠폰 이벤트를 증가시키는 테스트")
     void increaseAmountOfCouponCount() {
         // given
-        int attendants = 100;
+        int attendants = 1000;
 
-        EventCoupon 선착순_이벤트 = EventCoupon.createEventCoupon("선착순 이벤트", CouponEventType.FIRST_COME);
+        EventCoupon 선착순_이벤트 = EventCoupon.createEventCoupon("선착순 이벤트", 100, CouponEventType.FIRST_COME);
         Coupon firstComeCoupon = Coupon.createCoupon(new FirstComeCouponStrategy(
                 LocalDateTime.now().plusHours(1),
                 선착순_이벤트));
