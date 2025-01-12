@@ -26,9 +26,10 @@ public class EventCoupon {
     @OneToMany(fetch = FetchType.LAZY)
     private List<Coupon> coupons = new ArrayList<>();
 
-    public static EventCoupon createEventCoupon(String name, CouponEventType couponEventType) {
+    public static EventCoupon createEventCoupon(String name, int issuedCount, CouponEventType couponEventType) {
         EventCoupon eventCoupon = new EventCoupon();
         eventCoupon.name = name;
+        eventCoupon.issuedCount = issuedCount;
         eventCoupon.couponEventType = couponEventType;
         eventCoupon.status = EventStatus.OPENED;
         return eventCoupon;
@@ -39,4 +40,23 @@ public class EventCoupon {
         coupons.forEach(Coupon::makeCouponExpired);
     }
 
+    public boolean isClosed() {
+        return status == EventStatus.CLOSED;
+    }
+
+    public void deliverCoupon(int numberOfCoupons) {
+        validateCoupon();
+        int totalCouponCount = usedCount + numberOfCoupons ;
+        if (totalCouponCount > issuedCount) {
+            endEvent();
+            throw new IllegalArgumentException("Invalid coupon count");
+        }
+        usedCount = totalCouponCount;
+    }
+
+    public void validateCoupon() {
+        if (issuedCount > usedCount || isClosed()){
+            throw new IllegalArgumentException("Invalid coupon");
+        }
+    }
 }
