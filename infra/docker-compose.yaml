@@ -18,7 +18,7 @@ services:
     container_name: redis
     image: redis:7.0.11
     ports:
-      - "6379:6379"
+      - "6479:6479"
     restart: always
     labels:
       - "name=redis"
@@ -41,7 +41,7 @@ services:
       - ./redis/etc/slave.conf:/etc/slave.conf:rw
     env_file: ./redis/.env
     ports:
-      - "6479:6379"
+      - "6479:6479"
     command: redis-server /etc/slave.conf
     network_mode: host
 #    networks:
