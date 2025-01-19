@@ -6,9 +6,9 @@ import com.football_fan.coupon_event.adaper.persistence.out.entity.Coupon;
 public class WelcomeCouponStrategy implements CouponEventTypeStrategy {
 
     @Override
-    public Coupon apply() {
+    public Coupon apply(String userId) {
         Coupon coupon = new Coupon();
         coupon.noExpirationDate();
-        return coupon;
+        return coupon.assignUserId(userId);
     }
 }
