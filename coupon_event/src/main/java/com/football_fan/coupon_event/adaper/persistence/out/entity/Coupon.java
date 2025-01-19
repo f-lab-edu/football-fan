@@ -4,12 +4,14 @@ import com.football_fan.coupon_event.application.domain.policy.CouponEventTypeSt
 import com.football_fan.coupon_event.application.domain.DiscountType;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @Table(name = "coupons")
+@NoArgsConstructor
 public class Coupon {
     @Id
     Long id;
@@ -33,19 +35,17 @@ public class Coupon {
     private final LocalDateTime createdAt = LocalDateTime.now();
     private final LocalDateTime updatedAt = LocalDateTime.now();
 
-    public Coupon() {
-    }
-
-    public Coupon(LocalDateTime expirationDate){
-        this.expirationDate = expirationDate;
-    }
-
-    public static Coupon createCoupon(CouponEventTypeStrategy couponEventTypeStrategy) {
-        return couponEventTypeStrategy.apply();
+    public static Coupon createCoupon(String userId, CouponEventTypeStrategy couponEventTypeStrategy) {
+        return couponEventTypeStrategy.apply(userId);
     }
 
     public void assignEventCoupon(EventCoupon eventCoupon) {
         this.eventCoupon = eventCoupon;
+    }
+
+    public Coupon assignUserId(String userId) {
+        this.userId = userId;
+        return this;
     }
 
     public boolean useCoupon() {
@@ -55,10 +55,6 @@ public class Coupon {
     public Coupon yearlyExpirationDate() {
         expirationDate = LocalDateTime.now().plusYears(1);
         return this;
-    }
-
-    public Long getEventCouponId() {
-        return eventCoupon.getId();
     }
 
     public void assignExpirationDate(LocalDateTime expirationDate) {
