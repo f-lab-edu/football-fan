@@ -1,20 +1,22 @@
 package com.football_fan.coupon_event.application.service.coupon;
 
+import com.football_fan.coupon_event.adaper.persistence.out.entity.EventCoupon;
 import com.football_fan.coupon_event.application.service.exception.DuplicateParticipationException;
 import com.football_fan.coupon_event.application.service.exception.FullParticipantsException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.redisson.api.RBatch;
-import org.redisson.api.RFuture;
-import org.redisson.api.RedissonClient;
+import org.redisson.api.*;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletionStage;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class CouponRedisService {
+    public static final String EVENT_KEY = "EVENT:SET";
     private final RedissonClient client;
 
     /**
@@ -23,8 +25,7 @@ public class CouponRedisService {
      * @param eventId 참가하기 위한 레디스 이벤트 식별자
      * @param userId  참가자 Id
      */
-    public int addParticipant(String eventId, String userId, int maxParticipants) {
-        String EVENT_KEY = "EVENT:SET";
+    public int addParticipant(Long eventId, String userId, int maxParticipants) {
         String eventGetKey = EVENT_KEY + eventId;
         RBatch batch = client.createBatch();
 
@@ -68,4 +69,21 @@ public class CouponRedisService {
         }
     }
 
+    public void deleteEvent(String eventId) {
+        String eventGetKey = EVENT_KEY + eventId;
+        client.getSet(eventGetKey).delete();
+
+    }
+
+    public String getKeySetsForEvent(String keyPattern) {
+        RKeys rKeys = client.getKeys();
+        Iterable<String> keysByPattern = rKeys.getKeysByPattern(keyPattern, 1);
+        return keysByPattern.iterator().hasNext() ? keysByPattern.iterator().next() : null;
+    }
+
+    public List<String> getParticipants(EventCoupon eventCoupon){
+        String eventKey = EVENT_KEY + eventCoupon.getId();
+        RSet<String> participants = client.getSet(eventKey);
+        return new ArrayList<>(participants.readAll());
+    }
 }

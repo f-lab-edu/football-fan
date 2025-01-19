@@ -10,7 +10,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Repository
+@Transactional
 @RequiredArgsConstructor
 public class EventCouponCommand implements SaveEventCouponPort {
 
@@ -18,23 +21,19 @@ public class EventCouponCommand implements SaveEventCouponPort {
     private final DataJpaCoupon couponRepository;
 
     @Override
-    @Transactional
     public EventCoupon openNewEventCoupon(String eventName, CouponEventType couponEventType, int toBeIssued) {
         EventCoupon eventCoupon = EventCoupon.createEventCoupon(eventName, toBeIssued, couponEventType);
         return eventCouponRepository.save(eventCoupon);
     }
 
-    public void saveEventCoupon(Long eventId, int couponCount) {
-        EventCoupon eventCoupon = eventCouponRepository.findById(eventId).orElseThrow(
-                () -> new IllegalArgumentException("Event not found")
-        );
-        eventCoupon.deliverCoupon(couponCount);
-        eventCouponRepository.save(eventCoupon);
+    @Override
+    public Coupon saveCoupon(Coupon coupon) {
+        return couponRepository.save(coupon);
     }
 
     @Override
-    public Coupon createNewCoupon(Coupon coupon) {
-        return couponRepository.save(coupon);
+    public List<Coupon> bulkInsertCoupon(List<Coupon> coupons) {
+        return couponRepository.saveAll(coupons);
     }
 
     @Override
