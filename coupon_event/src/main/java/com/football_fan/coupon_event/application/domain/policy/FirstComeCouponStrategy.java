@@ -16,10 +16,10 @@ public class FirstComeCouponStrategy implements CouponEventTypeStrategy{
     }
 
     @Override
-    public Coupon apply() {
+    public Coupon apply(String userId) {
         Coupon coupon = new Coupon();
         coupon.assignExpirationDate(expire);
         coupon.assignEventCoupon(eventCoupon);
-        return coupon;
+        return coupon.assignUserId(userId);
     }
 }

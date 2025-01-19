@@ -41,7 +41,7 @@ class CouponRepositoryTest {
         int attendants = 1000;
 
         EventCoupon 선착순_이벤트 = EventCoupon.createEventCoupon("선착순 이벤트", 100, CouponEventType.FIRST_COME);
-        Coupon firstComeCoupon = Coupon.createCoupon(new FirstComeCouponStrategy(
+        Coupon firstComeCoupon = Coupon.createCoupon("1", new FirstComeCouponStrategy(
                 LocalDateTime.now().plusHours(1),
                 선착순_이벤트));
 
