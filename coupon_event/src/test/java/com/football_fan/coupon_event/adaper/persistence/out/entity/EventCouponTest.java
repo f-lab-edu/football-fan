@@ -41,11 +41,11 @@ class EventCouponTest {
 
         // when
         eventCoupon.validateCoupon();
-        int excessCoupons = eventCoupon.deliverCoupon(deliveryCoupon);
+        eventCoupon.deliverCoupon(deliveryCoupon);
         assertThrows(IllegalArgumentException.class, eventCoupon::validateCoupon);
 
         // then
-        assertEquals(5, excessCoupons);
+        assertEquals(eventCoupon.getIssuedCount(), eventCoupon.getUsedCount());
     }
 
     @Test

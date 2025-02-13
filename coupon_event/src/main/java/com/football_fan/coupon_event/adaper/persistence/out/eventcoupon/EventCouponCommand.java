@@ -22,8 +22,7 @@ public class EventCouponCommand implements SaveEventCouponPort {
 
     @Override
     public EventCoupon openNewEventCoupon(String eventName, CouponEventType couponEventType, int toBeIssued) {
-        EventCoupon eventCoupon = EventCoupon.createEventCoupon(eventName, toBeIssued, couponEventType);
-        return eventCouponRepository.save(eventCoupon);
+        return eventCouponRepository.save(EventCoupon.createEventCoupon(eventName, toBeIssued, couponEventType));
     }
 
     @Override

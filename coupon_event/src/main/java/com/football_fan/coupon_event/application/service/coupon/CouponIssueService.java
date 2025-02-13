@@ -13,6 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.football_fan.coupon_event.adaper.persistence.out.entity.Coupon.createCoupon;
 
 
 @Service
@@ -31,19 +34,16 @@ public class CouponIssueService {
         );
     }
 
-    public void bulkIssueFirstComeEventCoupon(EventCoupon eventCoupon, List<String> userIds) {
-        List<Coupon> coupons = userIds.stream()
-                .map(userId -> Coupon.createCoupon(
-                        userId,
-                        new FirstComeCouponStrategy(
-                                LocalDateTime.now().plusDays(1),
-                                eventCoupon
-                        )
-                )).toList();
+    public void createAndSaveCoupons(List<String> userIds, EventCoupon eventCoupon) {
+        List<Coupon> coupons = userIds.stream().map(userId -> createCoupon(userId, eventCoupon)).collect(Collectors.toList());
         saveEventCouponPort.bulkInsertCoupon(coupons);
     }
 
-    public int updateEventCoupon(Long eventId, int couponCount) {
+    private Coupon createCoupon(String userId, EventCoupon eventCoupon) {
+        return Coupon.createCoupon(userId, new FirstComeCouponStrategy(LocalDateTime.now().plusDays(1), eventCoupon));
+    }
+
+    public void updateEventCoupon(Long eventId, int couponCount) {
 
         String lockKey = getEventCouponLockKey(eventId);
 
@@ -55,10 +55,8 @@ public class CouponIssueService {
                     () -> new IllegalArgumentException("Event not found")
             );
             eventCoupon.validateCoupon();
-            int exceeded = eventCoupon.deliverCoupon(couponCount);
+            eventCoupon.deliverCoupon(couponCount);
             saveEventCouponPort.save(eventCoupon);
-
-            return exceeded;
         } finally {
             redisService.releaseLock(lockKey);
         }

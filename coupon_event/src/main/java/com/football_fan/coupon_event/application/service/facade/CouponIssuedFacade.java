@@ -24,11 +24,14 @@ public class CouponIssuedFacade implements CouponUseCase {
 
     @Override
     public int issueCoupon(Long eventId, String userId) {
-        // 쿠폰 이벤트 정보 확인
-
-        EventCoupon eventInformation = couponIssueService.getEventInformation(eventId);
-        // 쿠폰 발급 처리
-        return couponRedisService.addParticipant(eventId, userId, eventInformation.getIssuedCount());
+        try {
+            // 쿠폰 이벤트 정보 확인
+            EventCoupon eventInformation = couponIssueService.getEventInformation(eventId);
+            // 쿠폰 발급 처리
+            return couponRedisService.addParticipant(eventId, userId, eventInformation.getIssuedCount());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Event not found");
+        }
     }
 
     @Scheduled(cron = "0/10 * * * * *")
@@ -41,17 +44,15 @@ public class CouponIssuedFacade implements CouponUseCase {
                 this::proceedCouponIssuedForEvent, () -> log.debug("No matching queue found."));
     }
 
-    private Optional<Integer> updateEventStatus(Long eventId, List<String> participants) {
+    private void updateEventStatus(Long eventId, List<String> participants) {
         // 이벤트 참여가 가능한 유저만 필터링
         try {
-            int exceedCount = couponIssueService.updateEventCoupon(eventId, participants.size());
-            return Optional.of(exceedCount);
+            couponIssueService.updateEventCoupon(eventId, participants.size());
         } catch (RedisLockAcquisitionException e) {
             log.error("Redis lock acquisition failed");
         } catch (IllegalArgumentException e) {
             log.error(e.getMessage());
         }
-        return Optional.empty();
     }
 
     private void proceedCouponIssuedForEvent(String eventId) {
@@ -60,30 +61,25 @@ public class CouponIssuedFacade implements CouponUseCase {
 
         // 참여한 유저수가 쿠폰 맥시멈 미만이면 쿠폰 발급 프로세스 진행
         if (eventCoupon.isFull()) {
-            log.debug("Event {} is full", eventId);
             return;
         }
         List<String> participants = couponRedisService.getParticipants(eventCoupon);
         // 이벤트 참여가 가능한 유저만 필터링
-        Optional<Integer> optionalExceedCount = updateEventStatus(Long.parseLong(eventId), participants);
-        if (optionalExceedCount.isEmpty()) {
-            return;
-        }
-        participants = getValidParticipants(optionalExceedCount, participants);
+        updateEventStatus(Long.parseLong(eventId), participants);
         // 참여한 유저에게 쿠폰 발급
-        couponIssueService.bulkIssueFirstComeEventCoupon(eventCoupon, participants);
+        couponIssueService.createAndSaveCoupons(participants.subList(0, eventCoupon.getIssuedCount()), eventCoupon);
         // 쿠폰 발급 프로세스 진행 후 레디스에서 해당 이벤트 정보 삭제
         couponRedisService.deleteEvent(eventId);
     }
 
-    private static List<String> getValidParticipants(Optional<Integer> optionalExceedCount, List<String> participants) {
-        int exceedCount = optionalExceedCount.get();
-        if (exceedCount > 0) {
-            int validatedCount = participants.size() - exceedCount;
-            participants = participants.subList(0, validatedCount);
-        }
-        return participants;
-    }
+//    private static List<String> getValidParticipants(Optional<Integer> optionalExceedCount, List<String> participants) {
+//        int exceedCount = optionalExceedCount.get();
+//        if (exceedCount > 0) {
+//            int validatedCount = participants.size() - exceedCount;
+//            participants = participants.subList(0, validatedCount);
+//        }
+//        return participants;
+//    }
 
     private Optional<String> extractEventIdFromKey() {
         return Optional.of(couponRedisService.getKeySetsForEvent(CouponRedisService.EVENT_KEY + "*"));
