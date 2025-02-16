@@ -13,6 +13,7 @@ import java.util.List;
 @Table(name = "event_coupons")
 public class EventCoupon {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
@@ -52,16 +53,14 @@ public class EventCoupon {
         return issuedCount == usedCount;
     }
 
-    public int deliverCoupon(int numberOfCoupons) {
+    public void deliverCoupon(int numberOfCoupons) {
         int totalCouponCount = usedCount + numberOfCoupons;
         if (totalCouponCount >= issuedCount) {
             endEvent();
             usedCount = issuedCount;
-            // return exceeded coupon count
-            return totalCouponCount - issuedCount;
+        }else {
+            usedCount = totalCouponCount;
         }
-        usedCount = totalCouponCount;
-        return 0;
     }
 
     public void validateCoupon() {
