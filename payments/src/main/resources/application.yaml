@@ -1,0 +1,4 @@
+psp:
+  toss:
+    url: "https://api.tosspayments.com"
+    secretKey: "test_ck_oEjb0gm23PwyAjP6b0048pGwBJn5"
